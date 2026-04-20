@@ -1,7 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("./assignments.db");
 
-// Initialize table if not exists
 db.run(
   `
 CREATE TABLE IF NOT EXISTS assignments (
@@ -13,7 +12,6 @@ CREATE TABLE IF NOT EXISTS assignments (
 )
 `,
   () => {
-    // Add new columns if they don't exist
     db.run(
       `ALTER TABLE assignments ADD COLUMN reminded_1d INTEGER DEFAULT 0`,
       (err) => {
@@ -40,10 +38,18 @@ CREATE TABLE IF NOT EXISTS assignments (
         }
       },
     );
+
+    db.run(
+      `ALTER TABLE assignments ADD COLUMN completed INTEGER DEFAULT 0`,
+      (err) => {
+        if (err && !err.message.includes("duplicate column name")) {
+          console.error("Error adding completed column:", err);
+        }
+      },
+    );
   },
 );
 
-// Initialize canvas_tokens table
 db.run(
   `CREATE TABLE IF NOT EXISTS canvas_tokens (
     chat_id INTEGER PRIMARY KEY,

@@ -1,4 +1,3 @@
-// handlers/autoSyncScheduler.js
 const cron = require("node-cron");
 const db = require("../../../configs/db");
 const CanvasService = require("./canvasService");
@@ -44,7 +43,6 @@ function startAutoSyncScheduler(bot) {
             const title = `[${assignment.course}] ${assignment.title}`;
             const canvas_id = assignment.id;
 
-            // Check if assignment already exists
             const existing = await new Promise((resolve) => {
               db.get(
                 `SELECT id FROM assignments WHERE chat_id = ? AND title = ? AND due_time = ?`,
@@ -56,7 +54,6 @@ function startAutoSyncScheduler(bot) {
             if (existing) {
               skipped++;
             } else {
-              // Insert new assignment
               await new Promise((resolve, reject) => {
                 db.run(
                   `INSERT INTO assignments (chat_id, title, due_time, canvas_id)
@@ -69,7 +66,6 @@ function startAutoSyncScheduler(bot) {
             }
           }
 
-          // Update last sync time
           db.run(`UPDATE canvas_tokens SET last_sync = ? WHERE chat_id = ?`, [
             Date.now(),
             user.chat_id,

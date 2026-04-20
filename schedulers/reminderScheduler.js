@@ -51,6 +51,11 @@ function startReminderScheduler(bot) {
         const assignments = await getAssignmentsForReminders(chatId);
 
         for (const a of assignments) {
+          // ✅ SKIP COMPLETED ASSIGNMENTS
+          if (a.completed === 1) {
+            continue;
+          }
+
           const timeLeft = a.due_time - now;
 
           // 🔔 1-DAY REMINDER

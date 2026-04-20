@@ -1,5 +1,5 @@
 const axios = require("axios");
-
+const { getOrCreateToken } = require("../../utils/tokenManager");
 const API_URL = process.env.API_URL || "http://localhost:3000/api";
 
 function handleAddAssignment(bot) {
@@ -32,13 +32,22 @@ function handleAddAssignment(bot) {
       }
 
       try {
-        // Call API to create assignment
-        const response = await axios.post(`${API_URL}/assignments`, {
-          chatId: ctx.chat.id,
-          title: ctx.session.title,
-          dueTime: dueTime,
-          canvasId: 0,
-        });
+        const token = await getOrCreateToken(ctx.chat.id, ctx.from.username);
+
+        const response = await axios.post(
+          `${API_URL}/assignments`,
+          {
+            chatId: ctx.chat.id,
+            title: ctx.session.title,
+            dueTime: dueTime,
+            canvasId: 0,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
         if (response.data.success) {
           ctx.reply(
@@ -71,7 +80,6 @@ function parseDueDate(input) {
     const year = now.getFullYear();
     const dueDate = new Date(year, month - 1, day, hour, minute);
 
-    // If date is in the past, assume next year
     if (dueDate < now) {
       dueDate.setFullYear(year + 1);
     }

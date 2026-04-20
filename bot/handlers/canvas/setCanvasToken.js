@@ -1,5 +1,5 @@
 const axios = require("axios");
-
+const { getOrCreateToken } = require("../../../utils/tokenManager");
 const API_URL = process.env.API_URL || "http://localhost:3000/api";
 
 function handleSetCanvasToken(bot) {
@@ -21,20 +21,23 @@ function handleSetCanvasToken(bot) {
       );
     }
 
-    const token = parts[1];
+    const canvasToken = parts[1];
     const username = ctx.from.username || "No username";
     const firstName = ctx.from.first_name;
     const userId = ctx.from.id;
 
     try {
-      // Call API to save Canvas token
+      const jwtToken = await getOrCreateToken(ctx.chat.id, ctx.from.username);
+
       const response = await axios.post(`${API_URL}/canvas/token`, {
         chatId: ctx.chat.id,
-        token: token,
+        token: canvasToken,
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
       });
 
       if (response.data.success) {
-        // Log user info
         console.log(
           `✅ Canvas configured by @${username} (${firstName}, ID: ${userId})`,
         );

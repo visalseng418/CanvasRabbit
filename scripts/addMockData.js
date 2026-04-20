@@ -1,8 +1,7 @@
 require("dotenv").config();
 const db = require("../configs/db");
 
-// Test chat ID (use your actual Telegram chat ID)
-const TEST_CHAT_ID = "1659801509"; // Replace with your chat ID
+const TEST_CHAT_ID = "1659801509";
 
 function addMockData() {
   const now = Date.now();
@@ -13,17 +12,16 @@ function addMockData() {
   const twentyFourHours = 24 * 60 * 60 * 1000;
 
   const mockAssignments = [
-    // Due in ~5 minutes (should trigger 5h reminder immediately)
     {
       chat_id: TEST_CHAT_ID,
       title: "[TEST] Assignment Due in 5 Minutes",
       due_time: now + fiveMinutes,
       canvas_id: 0,
-      reminded_1d: 1, // Already sent 1d reminder
-      reminded_5h: 0, // Haven't sent 5h reminder yet
+      reminded_1d: 1,
+      reminded_5h: 0,
+      completed: 0,
     },
 
-    // Due in ~1 hour (should trigger 5h reminder)
     {
       chat_id: TEST_CHAT_ID,
       title: "[TEST] Assignment Due in 1 Hour",
@@ -31,19 +29,19 @@ function addMockData() {
       canvas_id: 0,
       reminded_1d: 1,
       reminded_5h: 0,
+      completed: 0,
     },
 
-    // Due in ~5 hours (should trigger 5h reminder)
     {
       chat_id: TEST_CHAT_ID,
-      title: "[TEST] Assignment Due in 5 Hours",
+      title: "[TEST] Assignment Due in 5 Hours (COMPLETED)",
       due_time: now + fiveHours,
       canvas_id: 0,
       reminded_1d: 1,
       reminded_5h: 0,
+      completed: 1,
     },
 
-    // Due in ~24 hours (should trigger 1d reminder)
     {
       chat_id: TEST_CHAT_ID,
       title: "[TEST] Assignment Due in 24 Hours",
@@ -51,9 +49,9 @@ function addMockData() {
       canvas_id: 0,
       reminded_1d: 0,
       reminded_5h: 0,
+      completed: 0,
     },
 
-    // Due in 48 hours (no reminder yet)
     {
       chat_id: TEST_CHAT_ID,
       title: "[TEST] Assignment Due in 48 Hours",
@@ -61,9 +59,9 @@ function addMockData() {
       canvas_id: 0,
       reminded_1d: 0,
       reminded_5h: 0,
+      completed: 0,
     },
 
-    // Already passed (should be cleaned up)
     {
       chat_id: TEST_CHAT_ID,
       title: "[TEST] Expired Assignment",
@@ -71,6 +69,17 @@ function addMockData() {
       canvas_id: 0,
       reminded_1d: 1,
       reminded_5h: 1,
+      completed: 0,
+    },
+
+    {
+      chat_id: TEST_CHAT_ID,
+      title: "[TEST] Already Completed Assignment",
+      due_time: now + twentyFourHours * 3,
+      canvas_id: 0,
+      reminded_1d: 0,
+      reminded_5h: 0,
+      completed: 1,
     },
   ];
 
@@ -78,8 +87,8 @@ function addMockData() {
 
   mockAssignments.forEach((assignment, index) => {
     db.run(
-      `INSERT INTO assignments (chat_id, title, due_time, canvas_id, reminded_1d, reminded_5h)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO assignments (chat_id, title, due_time, canvas_id, reminded_1d, reminded_5h, completed)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         assignment.chat_id,
         assignment.title,
@@ -87,6 +96,7 @@ function addMockData() {
         assignment.canvas_id,
         assignment.reminded_1d,
         assignment.reminded_5h,
+        assignment.completed,
       ],
       function (err) {
         if (err) {
@@ -99,7 +109,10 @@ function addMockData() {
           const timeUntilDue = Math.round(
             (assignment.due_time - now) / (60 * 1000),
           );
+          const status =
+            assignment.completed === 1 ? "✅ COMPLETED" : "⏳ PENDING";
           console.log(`✅ Added: ${assignment.title}`);
+          console.log(`   Status: ${status}`);
           console.log(`   Due: ${dueDate.toLocaleString()}`);
           console.log(`   Time until due: ${timeUntilDue} minutes`);
           console.log(
@@ -110,15 +123,14 @@ function addMockData() {
     );
   });
 
-  // Wait a bit for all inserts to complete
   setTimeout(() => {
     console.log("✨ Mock data added! Check your assignments with /list\n");
-    console.log(
-      "📝 To get your chat ID, send any message to your bot and check the console logs.\n",
-    );
+    console.log("📝 Test commands:");
+    console.log("   /list - View all assignments (see ✅ vs ⏳ status)");
+    console.log("   /done <id> - Mark an assignment as completed");
+    console.log("   /undone <id> - Mark an assignment as incomplete\n");
     process.exit(0);
   }, 1000);
 }
 
-// Run the script
 addMockData();

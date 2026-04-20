@@ -5,14 +5,11 @@ const handleAddAssignment = require("./handlers/addAssignment");
 const handleListAssignments = require("./handlers/listAssignment");
 const handleDeleteAssignment = require("./handlers/deleteAssignment");
 const handleDeleteAllAssignments = require("./handlers/deleteAllAssignment");
-//const startReminderScheduler = require("./handlers/reminderScheduler");
-
-//Canvas Integration
 const handleSyncCanvas = require("./handlers/canvas/syncCanvas");
 const handleSetCanvasToken = require("./handlers/canvas/setCanvasToken");
-//const CanvasService = require("./handlers/canvas/canvasService");
-//const startAutoSyncScheduler = require("./handlers/canvas/autoSynceScheduler");
 const handleRemoveCanvasToken = require("./handlers/canvas/removeCanvasToken");
+const handleCompleteAssignment = require("./handlers/completeAssignment");
+const handleIncompleteAssignment = require("./handlers/incompleteAssignment");
 
 const BOT_TOKEN =
   process.env.NODE_ENV === "production"
@@ -55,7 +52,7 @@ bot.start((ctx) => {
           Markup.button.callback("🔓 Remove Canvas", "remove_canvas"),
         ],
         [
-          //Markup.button.callback("📚 Add Assignment", "add"),
+          Markup.button.callback("📚 Add Assignment", "add"),
           Markup.button.callback("📋 List Assignments", "list"),
         ],
         [Markup.button.callback("🗑️ Delete Assignment by ID", "delete")],
@@ -140,7 +137,10 @@ bot.action("help", (ctx) => {
     "📚 *Assignment Reminder Bot Help*\n\n" +
       "*Commands:*\n" +
       "• `/sync` - Import assignments from Canvas\n" +
+      "• `/add` - Add assignment manually\n" +
       "• `/list` - View all assignments\n" +
+      "• `/complete <id>` - Mark assignment as done\n" +
+      "• `/incomplete <id>` - Mark as incomplete\n" +
       "• `/delete <id>` - Delete specific assignment\n" +
       "• `/deleteall` - Delete all assignments\n" +
       "• `/removecanvas` - Remove Canvas Integration\n" +
@@ -190,18 +190,10 @@ handleAddAssignment(bot);
 handleListAssignments(bot);
 handleDeleteAllAssignments(bot);
 handleDeleteAssignment(bot);
-
-//Canvas Integration
 handleSetCanvasToken(bot);
 handleSyncCanvas(bot);
 handleRemoveCanvasToken(bot);
-
-// Start cron scheduler
-//startReminderScheduler(bot);
-//startAutoSyncScheduler(bot);
-
-// Launch bot
-//bot.launch();
-//console.log("Bot running...");
+handleCompleteAssignment(bot);
+handleIncompleteAssignment(bot);
 
 module.exports = bot;

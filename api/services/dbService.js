@@ -32,9 +32,9 @@ const dbAll = (sql, params = []) => {
 
 exports.getAssignmentsByChatId = async (chatId) => {
   return await dbAll(
-    `SELECT id, title, due_time, canvas_id FROM assignments 
+    `SELECT id, title, due_time, canvas_id, completed FROM assignments 
      WHERE chat_id = ? 
-     ORDER BY due_time ASC`,
+     ORDER BY completed ASC, due_time ASC`,
     [chatId],
   );
 };
@@ -158,7 +158,7 @@ exports.getAllChatIds = async () => {
 
 exports.getAssignmentsForReminders = async (chatId) => {
   return await dbAll(
-    `SELECT id, chat_id, title, due_time, reminded_1d, reminded_5h 
+    `SELECT id, chat_id, title, due_time, reminded_1d, reminded_5h , completed
      FROM assignments 
      WHERE chat_id = ? AND due_time > ?
      ORDER BY due_time ASC`,
@@ -171,4 +171,68 @@ exports.getAllCanvasTokensWithDetails = async () => {
   return await dbAll(
     `SELECT chat_id, canvas_token, last_sync FROM canvas_tokens`,
   );
+};
+
+// ==================== MARK AS COMPLETE ====================
+
+exports.markAssignmentComplete = async (id, chatId) => {
+  // Get assignment first to check if it exists
+  const assignment = await dbGet(
+    `SELECT * FROM assignments WHERE id = ? AND chat_id = ?`,
+    [id, chatId],
+  );
+
+  if (!assignment) {
+    return { success: false, message: "Assignment not found" };
+  }
+
+  if (assignment.completed === 1) {
+    return { success: false, message: "Assignment already marked as complete" };
+  }
+
+  // Mark as complete
+  await dbRun(
+    `UPDATE assignments SET completed = 1 WHERE id = ? AND chat_id = ?`,
+    [id, chatId],
+  );
+
+  return {
+    success: true,
+    assignment: {
+      id: assignment.id,
+      title: assignment.title,
+      completed: true,
+    },
+  };
+};
+
+exports.markAssignmentIncomplete = async (id, chatId) => {
+  // Get assignment first
+  const assignment = await dbGet(
+    `SELECT * FROM assignments WHERE id = ? AND chat_id = ?`,
+    [id, chatId],
+  );
+
+  if (!assignment) {
+    return { success: false, message: "Assignment not found" };
+  }
+
+  if (assignment.completed === 0) {
+    return { success: false, message: "Assignment is not completed" };
+  }
+
+  // Mark as incomplete
+  await dbRun(
+    `UPDATE assignments SET completed = 0 WHERE id = ? AND chat_id = ?`,
+    [id, chatId],
+  );
+
+  return {
+    success: true,
+    assignment: {
+      id: assignment.id,
+      title: assignment.title,
+      completed: false,
+    },
+  };
 };

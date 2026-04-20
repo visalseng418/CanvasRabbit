@@ -1,13 +1,19 @@
 const axios = require("axios");
-
+const { getOrCreateToken } = require("../../utils/tokenManager");
 const API_URL = process.env.API_URL || "http://localhost:3000/api";
 
 function handleDeleteAllAssignments(bot) {
   bot.command("deleteall", async (ctx) => {
     try {
-      // Check if there are assignments to delete
+      const token = await getOrCreateToken(ctx.chat.id, ctx.from.username);
+
       const checkResponse = await axios.get(
         `${API_URL}/assignments/${ctx.chat.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       if (checkResponse.data.data.length === 0) {
@@ -36,9 +42,15 @@ function handleDeleteAllAssignments(bot) {
     }
 
     try {
-      // Call API to delete all assignments
+      const token = await getOrCreateToken(ctx.chat.id, ctx.from.username);
+
       const response = await axios.delete(
         `${API_URL}/assignments/all/${ctx.chat.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       ctx.session = null;

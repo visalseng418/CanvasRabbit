@@ -1,6 +1,5 @@
 const dbService = require("../services/dbService");
 
-// GET all assignments for a user
 exports.getAssignments = async (req, res, next) => {
   try {
     const { chatId } = req.params;
@@ -29,7 +28,6 @@ exports.getAssignments = async (req, res, next) => {
   }
 };
 
-// POST create assignment
 exports.createAssignment = async (req, res, next) => {
   try {
     const { chatId, title, dueTime, canvasId } = req.body;
@@ -59,7 +57,6 @@ exports.createAssignment = async (req, res, next) => {
   }
 };
 
-// DELETE assignment
 exports.deleteAssignment = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -91,7 +88,6 @@ exports.deleteAssignment = async (req, res, next) => {
   }
 };
 
-// DELETE all assignments
 exports.deleteAllAssignments = async (req, res, next) => {
   try {
     const { chatId } = req.params;
@@ -115,7 +111,6 @@ exports.deleteAllAssignments = async (req, res, next) => {
   }
 };
 
-// PATCH - Update reminder status
 exports.updateReminderStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -146,7 +141,6 @@ exports.updateReminderStatus = async (req, res, next) => {
   }
 };
 
-// GET - Get all unique chat IDs
 exports.getAllChatIds = async (req, res, next) => {
   try {
     const chatIds = await dbService.getAllChatIds();
@@ -160,7 +154,6 @@ exports.getAllChatIds = async (req, res, next) => {
   }
 };
 
-// GET - Get assignments for reminders
 exports.getAssignmentsForReminders = async (req, res, next) => {
   try {
     const { chatId } = req.params;
@@ -170,6 +163,68 @@ exports.getAssignmentsForReminders = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: assignments,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.markComplete = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { chatId } = req.body;
+
+    if (!chatId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required field: chatId",
+      });
+    }
+
+    const result = await dbService.markAssignmentComplete(id, chatId);
+
+    if (!result.success) {
+      return res.status(404).json({
+        success: false,
+        error: result.message,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Assignment marked as complete",
+      data: result.assignment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.markIncomplete = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { chatId } = req.body;
+
+    if (!chatId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required field: chatId",
+      });
+    }
+
+    const result = await dbService.markAssignmentIncomplete(id, chatId);
+
+    if (!result.success) {
+      return res.status(404).json({
+        success: false,
+        error: result.message,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Assignment marked as incomplete",
+      data: result.assignment,
     });
   } catch (error) {
     next(error);

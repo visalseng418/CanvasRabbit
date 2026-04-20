@@ -1,5 +1,5 @@
 const axios = require("axios");
-
+const { getOrCreateToken } = require("../../../utils/tokenManager");
 const API_URL = process.env.API_URL || "http://localhost:3000/api";
 
 function handleSyncCanvas(bot) {
@@ -7,10 +7,22 @@ function handleSyncCanvas(bot) {
     try {
       ctx.reply("🔄 Syncing assignments from Canvas...");
 
-      // Call API to sync assignments
-      const response = await axios.post(`${API_URL}/canvas/sync`, {
-        chatId: ctx.chat.id,
-      });
+      const token = await getOrCreateToken(ctx.chat.id, ctx.from.username);
+      console.log(
+        "🔐 Using token for sync:",
+        token ? "Token exists" : "No token",
+      );
+
+      const response = await axios.post(
+        `${API_URL}/canvas/sync`,
+        { chatId: ctx.chat.id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
       if (response.data.success) {
         const { imported, skipped, total } = response.data.data;

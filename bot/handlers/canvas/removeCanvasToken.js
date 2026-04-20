@@ -1,13 +1,19 @@
 const axios = require("axios");
-
+const { getOrCreateToken } = require("../../../utils/tokenManager");
 const API_URL = process.env.API_URL || "http://localhost:3000/api";
 
 function handleRemoveCanvasToken(bot) {
   bot.command("removecanvas", async (ctx) => {
     try {
-      // Call API to remove Canvas token
+      const token = await getOrCreateToken(ctx.chat.id, ctx.from.username);
+
       const response = await axios.delete(
         `${API_URL}/canvas/token/${ctx.chat.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       if (response.data.success) {

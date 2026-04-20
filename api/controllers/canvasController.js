@@ -1,7 +1,6 @@
 const dbService = require("../services/dbService");
 const CanvasService = require("../services/canvasService");
 
-// POST - Save Canvas token
 exports.saveToken = async (req, res, next) => {
   try {
     const { chatId, token } = req.body;
@@ -24,7 +23,6 @@ exports.saveToken = async (req, res, next) => {
   }
 };
 
-// POST - Sync assignments from Canvas
 exports.syncAssignments = async (req, res, next) => {
   try {
     const { chatId } = req.body;
@@ -104,7 +102,6 @@ exports.syncAssignments = async (req, res, next) => {
   }
 };
 
-// DELETE - Remove Canvas token
 exports.removeToken = async (req, res, next) => {
   try {
     const { chatId } = req.params;
@@ -127,7 +124,6 @@ exports.removeToken = async (req, res, next) => {
   }
 };
 
-// GET - Get all Canvas tokens (for auto-sync scheduler)
 exports.getAllTokens = async (req, res, next) => {
   try {
     const tokens = await dbService.getAllCanvasTokensWithDetails();

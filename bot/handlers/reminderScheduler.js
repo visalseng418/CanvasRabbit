@@ -44,7 +44,7 @@ function startReminderScheduler(bot) {
         if (err || !rows?.length) return;
 
         rows.forEach((a) => {
-          const timeLeft = a.due_time - now; // milliseconds
+          const timeLeft = a.due_time - now;
           const formattedTimeLeft = formatTime(timeLeft);
 
           bot.telegram.sendMessage(

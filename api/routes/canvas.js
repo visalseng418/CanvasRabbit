@@ -1,17 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const canvasController = require("../controllers/canvasController");
+const {
+  authenticateToken,
+  verifyChatIdOwnership,
+} = require("../middleware/auth");
 
 // GET /api/canvas/tokens - Get all Canvas tokens (for scheduler)
-router.get("/tokens", canvasController.getAllTokens);
+router.get("/tokens", authenticateToken, canvasController.getAllTokens);
 
 // POST /api/canvas/token - Save Canvas token
 router.post("/token", canvasController.saveToken);
 
 // POST /api/canvas/sync - Sync assignments from Canvas
-router.post("/sync", canvasController.syncAssignments);
+
+router.post("/sync", authenticateToken, canvasController.syncAssignments);
 
 // DELETE /api/canvas/token/:chatId - Remove Canvas token
-router.delete("/token/:chatId", canvasController.removeToken);
+router.delete(
+  "/token/:chatId",
+  authenticateToken,
+  verifyChatIdOwnership,
+  canvasController.removeToken,
+);
 
 module.exports = router;
